@@ -10,8 +10,8 @@ services:
         - 5672:5672
         - 15672:15672
     networks:
-        - rabbitmq_go_net
+        - rabbitmq_net
 
 networks:
-  rabbitmq_go_net:
+  rabbitmq_net:
     driver: bridge
