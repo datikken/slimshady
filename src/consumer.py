@@ -1,28 +1,46 @@
-import pika, sys, os
+import pika
+import random
+import time
 
 
-def main():
-    credentials = pika.PlainCredentials('user', 'password')
-    connection = pika.BlockingConnection(pika.ConnectionParameters('127.0.0.1', credentials=credentials))
+subId = random.randint(1, 100)
+print("Subscriber Id = ", subId)
 
-    channel = connection.channel()
-    channel.queue_declare(queue="hello")
+credentials = pika.PlainCredentials('user', 'password')
+connection = pika.BlockingConnection(pika.ConnectionParameters('127.0.0.1', credentials=credentials))
 
-    def callback(ch, method, properties, body):
-        print("[x] received %r" %body)
+channel = connection.channel()
 
-    channel.basic_consume(queue="hello", on_message_callback=callback, auto_ack = True)
+channel.exchange_declare(exchange='logs_exchange', exchange_type='direct', durable=True)
 
-    print(" [*] waiting for the messages. To exit press Ctrl-C")
+queue_name = "task_queue"
+result = channel.queue_declare(queue=queue_name,
+                               #exclusive=True,
+                               durable=True)
 
-    channel.start_consuming()
+severity = ["Error", "Warning", "Info", "Other"]
 
-if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("Interrupted")
-        try:
-            sys.exit(0)
-        except SystemExit:
-            os._exit(0)
+for s in severity:
+    channel.queue_bind(exchange='logs_exchange', queue=queue_name, routing_key=s)
+
+print('[*] waiting for the messages')
+
+def callback(ch, method, properties, body):
+    print('[x] Received message:::: %r' %body)
+    #randomSleep = random.randint(1, 5)
+    randomSleep = 5
+    print("Working for ", randomSleep, "seconds")
+    while randomSleep > 0:
+        print(".", end="")
+        time.sleep(1)
+        randomSleep -= 1
+    print("!")
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+channel.basic_qos(prefetch_count=1)
+channel.basic_consume(queue=queue_name,
+                      on_message_callback=callback
+                      #auto_ack=True
+                      )
+
+channel.start_consuming()
