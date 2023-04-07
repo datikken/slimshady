@@ -1,9 +1,22 @@
+import asyncio
 from celery import Celery
-from time import sleep
 
-tg = Celery('tasks', backend='rpc://', broker='pyamqp://user:password@localhost//')
+app = Celery('tasks', backend='rpc://', broker='pyamqp://user:password@localhost//')
 
-@tg.task
+# Optional configuration, see the application user guide.
+app.conf.update(
+    result_expires=3600,
+)
+
+async def sum(a, b):
+    res = a + b
+    return res
+
+
+@app.task
 def add(x, y):
-    sleep(1)
-    return x + y
+  asyncio.run(sum(x, y))
+
+
+if __name__ == '__main__':
+    app.start()
