@@ -1,7 +1,9 @@
 from celery import Celery
+from time import sleep
 
-app = Celery('tasks', backend='rpc://', broker='pyamqp://user:password@localhost//')
+tg = Celery('tasks', backend='rpc://', broker='pyamqp://user:password@localhost//')
 
-@app.task
+@tg.task
 def add(x, y):
+    sleep(1)
     return x + y
