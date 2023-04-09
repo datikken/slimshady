@@ -1,8 +1,14 @@
 from tasks import add
-from time import sleep
+import asyncio
 
-result = add.apply_async((4,4))
+def sum(a, b):
+    res = a + b
+    return res
 
-print('test')
-print(result.get())
-print('green')
+async def main():
+  print('main')
+  add.delay(4, 4)
+  # await asyncio.sleep(1)
+  print('called')
+
+asyncio.run(main())
