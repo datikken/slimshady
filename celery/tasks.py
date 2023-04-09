@@ -1,10 +1,7 @@
 from celery import Celery
-from time import sleep
 
 app = Celery('tasks', backend="redis", broker='pyamqp://user:password@localhost//')
 app.conf.result_backend = 'redis://:sOmE_sEcUrE_pAsS@localhost:6379/0'
-
-# Optional configuration, see the application user guide.
 app.conf.update(
     result_expires=3600,
 )
